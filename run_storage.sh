@@ -1,7 +1,14 @@
 #########################################################################
 # File Name: run_storage.sh
-# Created Time: 2019年10月25日 星期五 23时52分34秒
+# Created Time: 2019年10月25日 星期五 23时52分24秒
 #########################################################################
 #!/bin/bash
 
-sudo mate-terminal -x /bin/sh -c "python start_device.py -m storage"
+
+device_count=$1
+
+for (( i = 1; i <= device_count; i++));
+do
+	nohup sudo mate-terminal -t storage$i -x /bin/sh -c "python start_device.py -m storage -p 323$i" &
+done
+

@@ -11,6 +11,12 @@ import sys
 import time
 import argparse
 
+from common import user, node, storage
+
+def usage():
+    print("\nfile name:", __file__)
+    print("USAGE:\n"
+          "\tpython ./start_device.py -m [user/node/storage] -p [num]\n")
 
 def start_user(user_name = 'User', port = 1234):
     print("You have start a user: {}[port:{}]".format(user_name, port))
@@ -30,11 +36,10 @@ def parser_args():
 def main():
     args = parser_args()
     if args.mode:
-        print(args.mode)
-    #start_user()
-    #start_node()
-    #start_storage()
-    time.sleep(5)
+        print(args.mode + args.port[-1:])
+    if args.port:
+        print(args.port)
+    time.sleep(60)
 
 if __name__ == "__main__":
     main()
