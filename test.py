@@ -10,8 +10,7 @@ import sys
 import time
 import random
 import hashlib
-from common import process_block
-from common import edit_cfg
+from common import construct_block
 from scapy.all import hexdump
 
 
@@ -34,25 +33,12 @@ def gen_block():
     print("timestamp:         ", timestamp)
     print("nonce:             ", nonce)
     print("data:              ", data)
-    c = process_block.Pro_block()
-    return c.construct_block(pre_block_hash, data_hash, \
+    return construct_block.construct_block(pre_block_hash, data_hash, \
             timestamp, nonce, data)
 
-def test_cfg():
-    e = edit_cfg.Edit_cfg()
-    e.clean_cfg()
-    content = {'user': 1234}
-    print(content)
-    e.wr_cfg(content)
-    e.wr_cfg(content)
-    data = e.rd_cfg()
-    for line in data:
-        print(eval(line))
-    
 
 def main():
-    #hexdump(gen_block())
-    test_cfg()
+    hexdump(gen_block())
 
 
 if __name__ == "__main__":

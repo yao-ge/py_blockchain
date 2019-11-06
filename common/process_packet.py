@@ -7,38 +7,48 @@
 
 
 import os
-from scapy.all import Ether
+from scapy.all import sr1
 from scapy.all import IP
 from scapy.all import UDP
 from scapy.all import hexdump
 from scapy.all import send
 from scapy.all import sniff
-from scapy.all import wrpcap
 from scapy.all import rdpcap
 from scapy.utils import PcapWriter
 
+from common import process_block
+
+dir_prefix = './pcaps/'
 
 class Pro_pkt:
-    def __init__(self, iface = 'lo', dport = 1111, pkt = None):
+    def __init__(self, iface = 'lo', pkt = None):
         self.iface = iface
-        self.dport = dport
         self.pkt = pkt
+        self.pb = process_block.Pro_block()
 
-    def construct_pkt(self, block = None):
-        self.pkt = IP()/UDP(sport = 12345, dport = self.dport)/block
+    def construct_pkt(self, sport = 0, dport = 0, block = None):
+        self.pkt = IP()/UDP(sport = sport, dport = dport)/block
         return self.pkt
+
+    def is_file_exists(self, filename, port = 2234):
+        if not os.path.exists(filename):
+            block = self.pb.create_genesis_block()
+            return self.construct_pkt(port, 3231, block)
+        else:
+            return None
 
     def send_pkt(self):
         send(self.pkt, iface = self.iface)
+        print(self.pkt.summary())
 
-    def recv_pkt(self, filter_rule = None):
-        return sniff(iface = self.iface, filter = filter_rule)
-
-    def sr1_pkt(self, filter_rule = None):
-        sr1(iface = self.iface, filter = filter_rule)
+    def recv_pkt(self, filter_rule = None, pkt_count = 1):
+        self.pkt = sniff(iface = self.iface, filter = filter_rule, \
+                count = pkt_count)
+        print(self.pkt.summary())
+        return self.pkt
 
     def wr_pkt(self, mode = 'node', port = 2234):
-        file_name = ''.join([mode, '_', str(port), '.pcap'])
+        file_name = ''.join([dir_prefix, mode, '_', str(port), '.pcap'])
         try:
             pktdump = PcapWriter(file_name, append = True, sync = True)
             pktdump.write(self.pkt)
@@ -46,14 +56,21 @@ class Pro_pkt:
             raise Exception
 
     def rd_one_pkt(self, mode = 'node', port = 2234):
-        file_name = ''.join([mode, '_', str(port), '.pcap'])
+        file_name = ''.join([dir_prefix, mode, '_', str(port), '.pcap'])
+        pkt = self.is_file_exists(file_name, port)
+        if pkt:
+            self.pkt = pkt
+            self.wr_pkt(port = port)
+            print("return genesis block")
+            return pkt
         try:
+            print("return from file")
             return rdpcap(file_name)[-1]
         except:
             raise Exception
 
     def rd_all_pkts(self, mode = 'node', port = 2234):
-        file_name = ''.join([mode, '_', str(port), '.pcap'])
+        file_name = ''.join([dir_prefix, mode, '_', str(port), '.pcap'])
         try:
             return rdpcap(file_name)
         except:

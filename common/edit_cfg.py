@@ -23,3 +23,6 @@ class Edit_cfg:
     def clean_cfg(self):
         with open(self.filename, 'w+') as fd:
             fd.truncate()
+
+    def count_cfg(self, content):
+        return self.rd_cfg().count(content + "\n")

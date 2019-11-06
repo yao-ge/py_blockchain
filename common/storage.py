@@ -6,9 +6,38 @@
 #########################################################################
 
 
+from common import process_packet
+
 class Storage:
-    def __init__(self, port = 1234):
+    def __init__(self, port = 3231):
         self.port = port
+        self.dport = 0
+        self.pkt = None
+        self.p = process_packet.Pro_pkt()
 
     def print_port(self):
         print(self.port)
+
+    def recv_pkt(self):
+        filter_rule = "udp dst port " + str(self.port)
+        pkt = self.p.recv_pkt(filter_rule, 1)
+        self.dport = pkt[0].sport
+        self.pkt = pkt[0]['IP']
+        return self.pkt
+
+    def get_pkt_from_file(self):
+        pkt = self.pkt
+        re_pkt = self.p.rd_one_pkt(port = pkt.sport)
+        self.pkt = re_pkt
+        return re_pkt
+
+    def write_pkt_to_file(self):
+        self.p.pkt = self.pkt
+        self.p.wr_pkt(port = self.pkt.sport)
+
+    def send_pkt(self):
+        pkt = self.pkt
+        pkt.sport, pkt.dport = pkt.dport, pkt.sport
+        self.p.pkt = pkt
+        self.p.send_pkt()
+

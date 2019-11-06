@@ -9,6 +9,6 @@ device_count=$1
 
 for (( i = 1; i <= device_count; i++));
 do
-	nohup sudo mate-terminal -t user$i -x /bin/sh -c "python start_device.py -m user -p 123$i" &
+	nohup sudo mate-terminal -t user$i -x /bin/sh -c "python3 start_device.py -m user -p 123$i" >> ./logs/user$i.log &
 done
 

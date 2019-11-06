@@ -4,6 +4,10 @@
 #########################################################################
 #!/bin/bash
 
+python3 init_cfg.py 
+
+rm ./*.pcap
+
 while getopts ":u:n:s:" opt
 do
 	case $opt in
@@ -32,4 +36,3 @@ do
 	esac
 done
 
-rm nohup.out
