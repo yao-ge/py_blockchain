@@ -13,15 +13,12 @@ do
 	case $opt in
 		u)
 			./run_user.sh $OPTARG
-			echo $OPTARG
 			;;
 		n)
 			./run_node.sh $OPTARG
-			echo $OPTARG
 			;;
 		s)
 			./run_storage.sh $OPTARG
-			echo $OPTARG
 			;;
 		?)
 			echo ""

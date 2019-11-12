@@ -24,7 +24,11 @@ class Pro_pkt:
     def __init__(self, iface = 'lo', pkt = None):
         self.iface = iface
         self.pkt = pkt
+        self.new_header_hash = '0' * 64
         self.pb = process_block.Pro_block()
+
+    def print_pkt(self, packet):
+        print(hexdump(packet))
 
     def construct_pkt(self, sport = 0, dport = 0, block = None):
         self.pkt = IP()/UDP(sport = sport, dport = dport)/block
@@ -37,14 +41,27 @@ class Pro_pkt:
         else:
             return None
 
+    def construct_pkt_with_pre_header_hash(self, sport, dport, \
+            pre_header_hash):
+        new_block = self.pb.create_new_block(pre_header_hash)
+        self.new_header_hash = self.pb.new_header_hash
+        return self.construct_pkt(sport, dport, new_block)
+
     def send_pkt(self):
         send(self.pkt, iface = self.iface)
-        print(self.pkt.summary())
+        print("send pkt: ", self.pkt.summary())
+
+    def broadcast_pkt(self, sport = 0, dport_list = [], block = None):
+        if dport_list:
+            self.construct_pkt(sport, dport_list, block)
+            self.send_pkt()
+        else:
+            print("dport list is none\n")
 
     def recv_pkt(self, filter_rule = None, pkt_count = 1):
         self.pkt = sniff(iface = self.iface, filter = filter_rule, \
                 count = pkt_count)
-        print(self.pkt.summary())
+        print("recv pkt: ", self.pkt[0].summary())
         return self.pkt
 
     def wr_pkt(self, mode = 'node', port = 2234):

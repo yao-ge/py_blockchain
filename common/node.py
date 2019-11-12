@@ -6,30 +6,34 @@
 #########################################################################
 
 from common import process_packet
+from common import process_block
 
 class Node:
     def __init__(self, port = 2231):
         self.port = port
+        self.new_header_hash = '0' * 64
+        self.headers_hash_list = []
         self.p = process_packet.Pro_pkt()
-
-    def print_port(self):
-        print(self.port)
+        self.pb = process_block.Pro_block()
 
     def listen_from_port(self, sport = 0):
-        filter_rule = "udp dst port " + str(self.port) + " and src port " \
-                + str(sport)
+        #filter_rule = "udp dst port " + str(self.port) + " and src port " \
+        #        + str(sport)
+        filter_rule = "udp dst port " + str(self.port)
         return self.p.recv_pkt(filter_rule, 1)
 
     def get_request_type(self, sport = 0):
         pkt = self.listen_from_port(sport)
-        if pkt[0]['Raw'].load == b'read':
+        if pkt[0]['Raw'].load.startswith(b'read'):
             request_type = 'read'
-        elif pkt[0]['Raw'].load == b'write':
+        elif pkt[0]['Raw'].load.startswith(b'write'):
             request_type = 'write'
+        elif pkt[0]['Raw'].load.startswith(b'exit'):
+            request_type = 'exit'
 
         return request_type, pkt[0]['IP']
 
-    def sr1_pkt_from_port(self, request_pkt, dport = 0):
+    def sr1_pkt_from_storage_to_user(self, request_pkt, dport = 0):
         pkt = request_pkt
         pkt.dport = dport
         pkt.sport = self.port
@@ -37,11 +41,33 @@ class Node:
         self.p.send_pkt()
 
         re_pkt = self.listen_from_port(dport)
+
+        pre_header_hash, data_hash, timestamp, nonce = \
+                self.pb.unpack_block(re_pkt[0]['IP'].load[:144])
+
+        hash_str = "".join([pre_header_hash.decode(), data_hash.decode(),\
+                str(timestamp), str(nonce)])
+
+        self.new_header_hash = self.pb.gen_hash(hash_str)
+        self.headers_hash_list.append(self.new_header_hash)
         return re_pkt[0]['IP']
 
-    def send_pkt_to_port(self, send_pkt, dport = 0):
+    def send_pkt_to_storage(self, send_pkt, dport = 0):
         pkt = send_pkt
         pkt.dport = dport
         pkt.sport = self.port
         self.p.pkt = pkt
         self.p.send_pkt()
+
+    def gen_pkt_with_pre_header_hash(self, sport = 0, dport = 0, \
+            pre_header_hash = '0' * 64):
+        pkt = self.p.construct_pkt_with_pre_header_hash(\
+                sport, dport, pre_header_hash)
+        self.new_header_hash = self.p.new_header_hash
+        self.headers_hash_list.append(self.new_header_hash)
+        return pkt
+
+    def send_new_header_hash_to_user(self, sport = 0, dport = 0):
+        pkt = self.p.construct_pkt(sport, dport, self.new_header_hash)
+        self.p.pkt = pkt
+        return self.p.send_pkt()

@@ -10,7 +10,8 @@ import sys
 import time
 import random
 import hashlib
-from common import construct_block
+import multiprocessing
+from common import process_block
 from scapy.all import hexdump
 
 
@@ -23,6 +24,7 @@ def gen_hash(data):
     return hashlib.sha256(data.encode('utf-8')).hexdigest()
 
 def gen_block():
+    p = process_block.Pro_block()
     data = "test"
     pre_block_hash = gen_hash("000")
     data_hash = gen_hash(data)
@@ -33,12 +35,19 @@ def gen_block():
     print("timestamp:         ", timestamp)
     print("nonce:             ", nonce)
     print("data:              ", data)
-    return construct_block.construct_block(pre_block_hash, data_hash, \
+    return p.construct_block(pre_block_hash, data_hash, \
             timestamp, nonce, data)
 
+def test_process(data):
+    print(data)
 
 def main():
-    hexdump(gen_block())
+    print("start multiprocess\n")
+    for i in range(0, 5):
+        p = multiprocessing.Process(target = test_process, args = (i,))
+        p.start()
+    p.join()
+    print("end multiprocess")
 
 
 if __name__ == "__main__":
