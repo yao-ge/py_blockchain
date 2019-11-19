@@ -35,12 +35,22 @@ def usage():
     print("USAGE:\n"
           "\tpython ./start_device.py -m [user/node/storage] -p [num]\n")
 
+
+def print_break():
+    print("\n")
+    print("#" * 48)
+    print("#" * 48)
+    print("\n")
+
+
+
 def start_user(user_name = 'User', port = user_port):
     pre_header_hash = ''
     new_header_hash = ''
     u = user.User(port)
     while True:
-        request_input = input("\nread[r]/write[w]/exit[e]\nrequest:")
+        print_break()
+        request_input = input("\n\033[31mread[r]/\033[32mwrite[w]/\033[33mnode join[nj]/\033[34mexit[e]\n\033[37mrequest:")
         if 'r' == request_input or 'read' == request_input:
             pre_header_hash = u.read_request()
             print("pre header hash:", pre_header_hash)
@@ -56,6 +66,10 @@ def start_user(user_name = 'User', port = user_port):
 def start_node(node_name = 'Node', port = 2231):
     n = node.Node(port)
     while True:
+        print("\n")
+        print("#" * 48)
+        print("#" * 48)
+        print("\n")
         print("get request type")
         re_type, re_pkt = n.get_request_type(user_port)
         print(hexdump(re_pkt))
@@ -65,17 +79,26 @@ def start_node(node_name = 'Node', port = 2231):
             print("send pkt to port")
             n.send_new_header_hash_to_user(port, user_port)
         elif 'write' == re_type:
+            #broad_pkt = n.change_request_type(b"write", b"broadcast")
+            #n.broadcast_to_all_nodes(pkt)
+
             print("pre header hash:", re_pkt.load[5:])
             re_pkt = n.gen_pkt_with_pre_header_hash(port, storage_port, re_pkt.load[5:].decode())
             time.sleep(1)
             n.send_new_header_hash_to_user(port, user_port)
             print(hexdump(re_pkt))
             n.send_pkt_to_storage(re_pkt, storage_port)
+        elif 'broadcast' == re_type:
+            pass
     print("You have start a user: {}[port:{}]".format(node_name, port))
 
 def start_storage(storage_name = 'Storage', port = storage_port):
     s = storage.Storage(port)
     while True:
+        print("\n")
+        print("#" * 48)
+        print("#" * 48)
+        print("\n")
         re_pkt = s.recv_pkt()
         print("recv pkt: ", hexdump(re_pkt))
         if re_pkt.load.startswith(b'read'):

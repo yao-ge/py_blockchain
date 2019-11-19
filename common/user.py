@@ -22,12 +22,12 @@ class User:
     def sr_pkt(self, content):
         count = self.e.count_cfg('node')
 
-        if content.startswith("read"):
-            self.dport = 2231 + randint(0, count - 1)
-        else:
-            self.dport = config.nodes_list[0:count]
+        #if content.startswith("read"):
+        #    self.dport = 2231 + randint(0, count - 1)
+        #else:
+        #    self.dport = config.nodes_list[0:count]
 
-        #self.dport = 2231 + randint(0, count - 1)
+        self.dport = 2231 + randint(0, count - 1)
 
         self.pro_pkt.construct_pkt(self.port, self.dport, content)
         self.pro_pkt.send_pkt()

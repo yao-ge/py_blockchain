@@ -34,7 +34,7 @@ class Pro_pkt:
         self.pkt = IP()/UDP(sport = sport, dport = dport)/block
         return self.pkt
 
-    def is_file_exists(self, filename, port = 2234):
+    def is_file_exists(self, filename, port = 2231):
         if not os.path.exists(filename):
             block = self.pb.create_genesis_block()
             return self.construct_pkt(port, 3231, block)
@@ -64,7 +64,7 @@ class Pro_pkt:
         print("recv pkt: ", self.pkt[0].summary())
         return self.pkt
 
-    def wr_pkt(self, mode = 'node', port = 2234):
+    def wr_pkt(self, mode = 'node', port = 2231):
         file_name = ''.join([dir_prefix, mode, '_', str(port), '.pcap'])
         try:
             pktdump = PcapWriter(file_name, append = True, sync = True)
@@ -72,7 +72,7 @@ class Pro_pkt:
         except:
             raise Exception
 
-    def rd_one_pkt(self, mode = 'node', port = 2234):
+    def rd_one_pkt(self, mode = 'node', port = 2231):
         file_name = ''.join([dir_prefix, mode, '_', str(port), '.pcap'])
         pkt = self.is_file_exists(file_name, port)
         if pkt:
@@ -86,7 +86,7 @@ class Pro_pkt:
         except:
             raise Exception
 
-    def rd_all_pkts(self, mode = 'node', port = 2234):
+    def rd_all_pkts(self, mode = 'node', port = 2231):
         file_name = ''.join([dir_prefix, mode, '_', str(port), '.pcap'])
         try:
             return rdpcap(file_name)

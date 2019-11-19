@@ -14,6 +14,23 @@ import multiprocessing
 from common import process_block
 from scapy.all import hexdump
 
+control_lable = 0
+
+class test_pro:
+    def __init__(self):
+        pass
+
+    def listen_lable_to_1(self):
+        while True:
+            if control_lable == 1:
+                break
+        print("lable has been set to 1\n")
+
+    def set_lable_to_1(self):
+        time.sleep(5)
+        print("before set lable to 1")
+        control_lable = 1
+
 
 def hash_test():
     data = str(sys.argv[1]).encode('utf-8')
@@ -43,9 +60,11 @@ def test_process(data):
 
 def main():
     print("start multiprocess\n")
-    for i in range(0, 5):
-        p = multiprocessing.Process(target = test_process, args = (i,))
-        p.start()
+    t = test_pro()
+    p = multiprocessing.Process(target = t.listen_lable_to_1, args = ())
+    p.start()
+    p = multiprocessing.Process(target = t.set_lable_to_1, args = ())
+    p.start()
     p.join()
     print("end multiprocess")
 
