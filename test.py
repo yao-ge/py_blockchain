@@ -16,21 +16,28 @@ from scapy.all import hexdump
 
 control_lable = 0
 
-class test_pro:
-    def __init__(self):
-        pass
+def listen_lable_to_1(queue):
+    global control_lable
+    while True:
+        control_lable = queue.get()
+        if control_lable == 2:
+            break
+    print("lable has been set to 1\n")
 
-    def listen_lable_to_1(self):
-        while True:
-            if control_lable == 1:
-                break
-        print("lable has been set to 1\n")
+def set_lable_to_1(queue):
+    global control_lable
+    time.sleep(5)
+    print("before set lable to 1")
+    control_lable = 2
+    queue.put(control_lable)
 
-    def set_lable_to_1(self):
-        time.sleep(5)
-        print("before set lable to 1")
-        control_lable = 1
+def create_queues(num):
+    return multiprocessing.Queue(num)
 
+def start_process(queue, target_func):
+    p = multiprocessing.Process(target = target_func, args = (queue, ))
+    p.start()
+    p.join()
 
 def hash_test():
     data = str(sys.argv[1]).encode('utf-8')
@@ -60,12 +67,18 @@ def test_process(data):
 
 def main():
     print("start multiprocess\n")
-    t = test_pro()
-    p = multiprocessing.Process(target = t.listen_lable_to_1, args = ())
-    p.start()
-    p = multiprocessing.Process(target = t.set_lable_to_1, args = ())
-    p.start()
-    p.join()
+
+    queue = create_queues(2)
+    start_process(queue, listen_lable_to_1)
+    start_process(queue, set_lable_to_1)
+
+    #queue = multiprocessing.Queue(2)
+    #p1 = multiprocessing.Process(target = listen_lable_to_1, args = (queue, ))
+    #p1.start()
+    #p2 = multiprocessing.Process(target = set_lable_to_1, args = (queue, ))
+    #p2.start()
+    #p1.join()
+    #p2.join()
     print("end multiprocess")
 
 
