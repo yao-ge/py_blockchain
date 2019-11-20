@@ -24,20 +24,6 @@ def listen_lable_to_1(queue):
             break
     print("lable has been set to 1\n")
 
-<<<<<<< HEAD
-    def listen_lable_to_1(self):
-        global control_lable
-        while True:
-            if control_lable == 1:
-                break
-        print("lable has been set to 1\n")
-
-    def set_lable_to_1(self):
-        global control_lable
-        time.sleep(5)
-        print("before set lable to 1")
-        control_lable = 1
-=======
 def set_lable_to_1(queue):
     global control_lable
     time.sleep(5)
@@ -47,7 +33,6 @@ def set_lable_to_1(queue):
 
 def create_queues(num):
     return multiprocessing.Queue(num)
->>>>>>> 736d7adde0a6125cc8ef625ad05d4b3efd08e8b7
 
 def start_process(queue, target_func):
     p = multiprocessing.Process(target = target_func, args = (queue, ))
@@ -82,15 +67,6 @@ def test_process(data):
 
 def main():
     print("start multiprocess\n")
-<<<<<<< HEAD
-    t = test_pro()
-    p1 = multiprocessing.Process(target = t.listen_lable_to_1, args = ())
-    p1.start()
-    p2 = multiprocessing.Process(target = t.set_lable_to_1, args = ())
-    p2.start()
-    p1.join()
-    p2.join()
-=======
 
     queue = create_queues(2)
     start_process(queue, listen_lable_to_1)
@@ -103,7 +79,6 @@ def main():
     #p2.start()
     #p1.join()
     #p2.join()
->>>>>>> 736d7adde0a6125cc8ef625ad05d4b3efd08e8b7
     print("end multiprocess")
 
 

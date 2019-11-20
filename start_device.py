@@ -41,8 +41,48 @@ def print_break():
     print("#" * 48)
     print("\n")
 
-def listen_from_other_nodes(target_func, dport, queue):
-    pkt = target_func(dport)
+def listen_from_other_nodes(node, dport, queue):
+    while True:
+        # step1: recv pkt from other nodes
+        print("step1: recv pkt from other nodes\n")
+        pkt = node.listen_from_port()
+        # step2: verify the pkt
+        print("step2: verify the pkt\n")
+        re_value, new_header_hash = node.verify_pkt_is_valid(pkt)
+        # step3: set queue to 1 indicates recvd pkt
+        print("step3: set queue to 1 indicates recvd pkt\n")
+        print("re value:", re_value)
+        if re_value == True:
+            is_recvd_pkt = 1
+            queue.put(is_recvd_pkt)
+            time.sleep(1)
+            print("send pkt to storage")
+            node.send_pkt_to_storage(pkt[0], storage_port)
+            break
+        else:
+            continue
+        # step4: send pkt to storage
+
+def do_proof_work_job(pre_header_hash, node, sport, queue):
+    # step1: do proof work job
+    print("step1: do proof work job\n")
+    pkt = node.gen_pkt_with_pre_header_hash(sport, storage_port, pre_header_hash)
+    # step2: determine the queue
+    print("step2: determine the queue\n")
+    is_recvd_pkt = queue.get()
+    # step3: send new pkt to other nodes and storage
+    print("step3: send new pkt to other nodes and storage\n")
+    if is_recvd_pkt == 1:
+        is_recvd_pkt = 0
+        queue.put(is_recvd_pkt)
+        pass
+    else:
+        time.sleep(1)
+        node.broadcast_to_all_nodes(pkt[0])
+        node.send_new_header_hash_to_user(sport, user_port)
+        pass
+    # step4: send new header hash to user
+
 
 def start_user(user_name = 'User', port = user_port):
     pre_header_hash = ''
@@ -65,7 +105,8 @@ def start_user(user_name = 'User', port = user_port):
 
 def start_node(node_name = 'Node', port = 2231):
     n = node.Node(port)
-    queue = multiprocessing.Queue(2)
+    queue = multiprocessing.Queue(1)
+    queue.put(0)
     while True:
         print_break()
         print("get request type")
@@ -77,8 +118,19 @@ def start_node(node_name = 'Node', port = 2231):
             print("send pkt to port")
             n.send_new_header_hash_to_user(port, user_port)
         elif 'write' == re_type:
-            broad_pkt = n.change_request_type(b"write", b"broadcast")
-            n.broadcast_to_all_nodes(pkt)
+            broad_pkt = n.change_request_type(re_pkt, b"write", b"broadcast")
+            n.broadcast_to_all_nodes(broad_pkt)
+
+            print("start child process in write mode")
+            p1 = multiprocessing.Process(target = listen_from_other_nodes, \
+                    args = (n, port, queue))
+            p1.start()
+            
+            p2 = multiprocessing.Process(target = do_proof_work_job, \
+                    args = (re_pkt.load[9:].decode(), n, port, queue))
+            p2.start()
+            p1.join()
+            p2.join()
 
             #print("pre header hash:", re_pkt.load[5:])
             #re_pkt = n.gen_pkt_with_pre_header_hash(port, storage_port, re_pkt.load[5:].decode())
@@ -87,7 +139,17 @@ def start_node(node_name = 'Node', port = 2231):
             #print(hexdump(re_pkt))
             #n.send_pkt_to_storage(re_pkt, storage_port)
         elif 'broadcast' == re_type:
-            pass
+            print("start child process in broadcast mode")
+            p1 = multiprocessing.Process(target = listen_from_other_nodes, \
+                    args = (n, port, queue))
+            p1.start()
+            
+            p2 = multiprocessing.Process(target = do_proof_work_job, \
+                    args = (re_pkt.load[9:].decode(), n, port, queue))
+            p2.start()
+            p1.join()
+            p2.join()
+
     print("You have start a user: {}[port:{}]".format(node_name, port))
 
 def start_storage(storage_name = 'Storage', port = storage_port):
