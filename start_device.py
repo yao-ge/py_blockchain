@@ -53,11 +53,12 @@ def listen_from_other_nodes(node, dport, queue):
         print("step3: set queue to 1 indicates recvd pkt\n")
         print("re value:", re_value)
         if re_value == True:
-            is_recvd_pkt = 1
+            is_recvd_pkt = 0
+            print("before put is recvd pkt:", is_recvd_pkt)
             queue.put(is_recvd_pkt)
             time.sleep(1)
             print("send pkt to storage")
-            node.send_pkt_to_storage(pkt[0], storage_port)
+            node.send_pkt_to_storage(pkt[0]["IP"], storage_port)
             break
         else:
             continue
@@ -71,15 +72,17 @@ def do_proof_work_job(pre_header_hash, node, sport, queue):
     print("step2: determine the queue\n")
     is_recvd_pkt = queue.get()
     # step3: send new pkt to other nodes and storage
-    print("step3: send new pkt to other nodes and storage\n")
+    print("before send is recvd pkt:", is_recvd_pkt)
     if is_recvd_pkt == 1:
         is_recvd_pkt = 0
         queue.put(is_recvd_pkt)
         pass
     else:
         time.sleep(1)
+        print("step3: send new pkt to other nodes and storage\n")
         node.broadcast_to_all_nodes(pkt[0])
         node.send_new_header_hash_to_user(sport, user_port)
+        print("after send is recvd pkt:", is_recvd_pkt)
         pass
     # step4: send new header hash to user
 
@@ -152,11 +155,11 @@ def start_node(node_name = 'Node', port = 2231):
 
     print("You have start a user: {}[port:{}]".format(node_name, port))
 
-def start_storage(storage_name = 'Storage', port = storage_port):
+def start_storage(storage_name = 'Storage', port = storage_port, listen_port = 0):
     s = storage.Storage(port)
     while True:
         print_break()
-        re_pkt = s.recv_pkt()
+        re_pkt = s.recv_pkt(listen_port)
         print("recv pkt: ", hexdump(re_pkt))
         if re_pkt.load.startswith(b'read'):
             print("get pkt from file")
@@ -189,7 +192,13 @@ def main():
     elif mode == 'node':
         start_node(args.mode, port)
     elif mode == 'storage':
-        start_storage(args.mode, port)
+        p1 = multiprocessing.Process(target = start_storage, args = (args.mode, port, 2231))
+        p1.start()
+        p2 = multiprocessing.Process(target = start_storage, args = (args.mode, port, 2232))
+        p2.start()
+        p1.join()
+        p2.join()
+        #start_storage(args.mode, port)
 
 if __name__ == "__main__":
     main()

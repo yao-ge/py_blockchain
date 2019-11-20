@@ -18,8 +18,9 @@ class Storage:
     def print_port(self):
         print(self.port)
 
-    def recv_pkt(self):
-        filter_rule = "udp dst port " + str(self.port)
+    def recv_pkt(self, sport = 0):
+        filter_rule = "udp dst port " + str(self.port) + \
+                " and src port " + str(sport)
         pkt = self.p.recv_pkt(filter_rule, 1)
         self.dport = pkt[0].sport
         self.pkt = pkt[0]['IP']
