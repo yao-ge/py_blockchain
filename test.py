@@ -21,12 +21,14 @@ class test_pro:
         pass
 
     def listen_lable_to_1(self):
+        global control_lable
         while True:
             if control_lable == 1:
                 break
         print("lable has been set to 1\n")
 
     def set_lable_to_1(self):
+        global control_lable
         time.sleep(5)
         print("before set lable to 1")
         control_lable = 1
@@ -61,11 +63,12 @@ def test_process(data):
 def main():
     print("start multiprocess\n")
     t = test_pro()
-    p = multiprocessing.Process(target = t.listen_lable_to_1, args = ())
-    p.start()
-    p = multiprocessing.Process(target = t.set_lable_to_1, args = ())
-    p.start()
-    p.join()
+    p1 = multiprocessing.Process(target = t.listen_lable_to_1, args = ())
+    p1.start()
+    p2 = multiprocessing.Process(target = t.set_lable_to_1, args = ())
+    p2.start()
+    p1.join()
+    p2.join()
     print("end multiprocess")
 
 
