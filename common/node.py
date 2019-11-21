@@ -99,3 +99,9 @@ class Node:
         print("verify new header hash:", self.new_header_hash)
         return self.pb.proof_work(hash_str), self.new_header_hash
 
+    def sync_with_other_nodes(self):
+        # step1: constuct sync request
+        # step2: broadcast request to other nodes
+        # step3: recv all pkts from other nodes
+        # step4: select the maxmun packets and copy files
+        pass
