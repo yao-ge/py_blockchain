@@ -68,17 +68,18 @@ def test_process(data):
 def main():
     print("start multiprocess\n")
 
-    queue = create_queues(2)
-    start_process(queue, listen_lable_to_1)
-    start_process(queue, set_lable_to_1)
+    #queue = create_queues(2)
+    #start_process(queue, listen_lable_to_1)
+    #start_process(queue, set_lable_to_1)
 
-    #queue = multiprocessing.Queue(2)
-    #p1 = multiprocessing.Process(target = listen_lable_to_1, args = (queue, ))
-    #p1.start()
-    #p2 = multiprocessing.Process(target = set_lable_to_1, args = (queue, ))
-    #p2.start()
-    #p1.join()
-    #p2.join()
+    queue = multiprocessing.Queue(2)
+    lock = multiprocessing.Lock()
+    p1 = multiprocessing.Process(target = listen_lable_to_1, args = (queue, lock))
+    p1.start()
+    p2 = multiprocessing.Process(target = set_lable_to_1, args = (queue, lock))
+    p2.start()
+    p1.join()
+    p2.join()
     print("end multiprocess")
 
 

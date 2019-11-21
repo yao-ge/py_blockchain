@@ -28,7 +28,7 @@ class Pro_pkt:
         self.pb = process_block.Pro_block()
 
     def print_pkt(self, packet):
-        print(hexdump(packet))
+        (hexdump(packet))
 
     def construct_pkt(self, sport = 0, dport = 0, block = None):
         self.pkt = IP()/UDP(sport = sport, dport = dport)/block

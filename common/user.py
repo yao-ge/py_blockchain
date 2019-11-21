@@ -50,3 +50,11 @@ class User:
     def write_request(self):
         content = 'write' + self.pre_header_hash
         return self.sr_pkt(content)
+
+    def exit_request(self):
+        content = 'exit'
+        count = self.e.count_cfg('node')
+        self.dport = 2231 + randint(0, count - 1)
+        self.pro_pkt.construct_pkt(self.port, self.dport, content)
+        self.pro_pkt.send_pkt()
+        

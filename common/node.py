@@ -99,11 +99,3 @@ class Node:
         print("verify new header hash:", self.new_header_hash)
         return self.pb.proof_work(hash_str), self.new_header_hash
 
-
-
-
-
-
-
-
-
