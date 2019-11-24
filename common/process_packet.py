@@ -49,7 +49,11 @@ class Pro_pkt:
 
     def send_pkt(self):
         send(self.pkt, iface = self.iface)
-        print("send pkt: ", self.pkt.summary())
+        if type(self.pkt) == list:
+            for pkt in self.pkt:
+                print(pkt.summary())
+        else:
+            print("send pkt: ", self.pkt.summary())
 
     def broadcast_pkt(self, sport = 0, dport_list = [], block = None):
         if dport_list:
@@ -92,3 +96,11 @@ class Pro_pkt:
             return rdpcap(file_name)
         except:
             raise Exception
+
+    def copy_from_port(self, sport = 0, dport = 0):
+        re_pkt = self.rd_all_pkts(port = sport)
+        for pkt in re_pkt:
+            pkt.sport = dport
+            self.pkt = pkt
+            self.wr_pkt(port = dport)
+

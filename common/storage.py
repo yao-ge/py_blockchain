@@ -32,13 +32,32 @@ class Storage:
         self.pkt = re_pkt
         return re_pkt
 
+    def get_all_pkts_from_file(self):
+        pkt = self.pkt
+        print("pkt sport:", pkt.sport)
+        re_pkt = self.p.rd_all_pkts(port = pkt.sport)
+        print("re pkt:", re_pkt)
+        print("get pkts from file:", re_pkt.summary())
+        self.pkt = re_pkt.res
+        return re_pkt.res
+
     def write_pkt_to_file(self):
         self.p.pkt = self.pkt
         self.p.wr_pkt(port = self.pkt.sport)
 
     def send_pkt(self):
-        pkt = self.pkt
-        pkt.sport, pkt.dport = pkt.dport, pkt.sport
-        self.p.pkt = pkt
+        pkts = self.pkt
+        if type(pkts) == list:
+            for i in range(len(pkts)):
+                print("pkts is list")
+                print(pkts[i].summary())
+                pkts[i].sport, pkts[i].dport = pkts[i].dport, pkts[i].sport
+                sport, dport = pkts[i].sport, pkts[i].dport
+                print(pkts[i].summary())
+            self.p.construct_pkt(sport, dport, str(len(pkts)))
+        else:
+            pkts.sport, pkts.dport = pkts.dport, pkts.sport
+            sport, dport = pkts.sport, pkts.dport
+            self.p.pkt = pkts
         self.p.send_pkt()
 

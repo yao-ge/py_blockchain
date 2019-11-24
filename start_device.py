@@ -83,7 +83,7 @@ def do_proof_work_job(pre_header_hash, node, sport, queue, lock):
     print("step3: send new pkt to other nodes and user\n")
     #if queue.get() == 0:
     if 1:
-        node.broadcast_to_all_nodes(pkt[0])
+        node.broadcast_to_all_nodes(pkt[0].load)
         node.send_new_header_hash_to_user(sport, user_port)
         #print("after send is recvd pkt:", is_recvd_pkt)
     else:
@@ -118,6 +118,7 @@ def start_node(node_name = 'Node', port = 2231):
     queue = multiprocessing.Queue(1)
     queue.put(0)
     lock = multiprocessing.Lock()
+    n.sync_with_other_nodes()
     while True:
         print_break()
         print("get request type")
@@ -130,7 +131,7 @@ def start_node(node_name = 'Node', port = 2231):
             n.send_new_header_hash_to_user(port, user_port)
         elif 'write' == re_type:
             broad_pkt = n.change_request_type(re_pkt, b"write", b"broadcast")
-            n.broadcast_to_all_nodes(broad_pkt)
+            n.broadcast_to_all_nodes(broad_pkt.load)
 
             print("start child process in write mode")
             p1 = multiprocessing.Process(target = listen_from_other_nodes, \
@@ -160,8 +161,12 @@ def start_node(node_name = 'Node', port = 2231):
             p2.start()
             p1.join()
             p2.join()
+        elif 'sync' == re_type:
+            target_node_port = re_pkt.sport
+            print("recv sync request, target port:", target_node_port)
+            n.sr1_pkt_from_storage_to_node(re_pkt, storage_port, target_node_port)
         elif 'exit' == re_type:
-            n.broadcast_to_all_nodes(re_pkt)
+            n.broadcast_to_all_nodes(re_pkt.load)
             n.send_pkt_to_storage(re_pkt, storage_port)
             break;
     print("You have start a user: {}[port:{}]".format(node_name, port))
@@ -182,6 +187,10 @@ def start_storage(storage_name = 'Storage', port = storage_port, listen_port = 0
         elif re_pkt.load.startswith(b'exit'):
             exit(0)
             break
+        elif re_pkt.load.startswith(b'sync'):
+            re_pkt = s.get_all_pkts_from_file()
+            time.sleep(1)
+            s.send_pkt()
         else:
             print("write pkt to file")
             s.write_pkt_to_file()
