@@ -34,9 +34,9 @@ class Storage:
 
     def get_all_pkts_from_file(self):
         pkt = self.pkt
-        print("pkt sport:", pkt.sport)
+        #print("pkt sport:", pkt.sport)
         re_pkt = self.p.rd_all_pkts(port = pkt.sport)
-        print("re pkt:", re_pkt)
+        #print("re pkt:", re_pkt)
         print("get pkts from file:", re_pkt.summary())
         self.pkt = re_pkt.res
         return re_pkt.res
@@ -49,11 +49,9 @@ class Storage:
         pkts = self.pkt
         if type(pkts) == list:
             for i in range(len(pkts)):
-                print("pkts is list")
                 print(pkts[i].summary())
                 pkts[i].sport, pkts[i].dport = pkts[i].dport, pkts[i].sport
                 sport, dport = pkts[i].sport, pkts[i].dport
-                print(pkts[i].summary())
             self.p.construct_pkt(sport, dport, str(len(pkts)))
         else:
             pkts.sport, pkts.dport = pkts.dport, pkts.sport

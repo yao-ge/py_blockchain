@@ -54,7 +54,7 @@ class Pro_block:
             pack_fmt = "".join(['64s', '64s', 'q', 'q', str(data_len), 's'])
         block = struct.pack(pack_fmt, pre_head_hash.encode('gbk'), \
                 data_hash.encode('gbk'), timestamp, nonce, data.encode('gbk'))
-        print("construct block:", block)
+        #print("construct block:", block)
         return block
 
     def unpack_block(self, block):
@@ -83,9 +83,9 @@ class Pro_block:
             nonce = random.randint(0, 4294967295)    # 0xffffffff
             hash_str = ''.join([pre_header_hash, data_hash, str(timestamp), str(nonce)])
             if self.proof_work(hash_str):
-                print("proof work hash str:", hash_str, type(hash_str))
+                #print("proof work hash str:", hash_str)
                 self.new_header_hash = self.gen_hash(hash_str)
-                print("proof work new header hash:", self.new_header_hash)
+                #print("proof work new header hash:", self.new_header_hash)
                 break
 
         return self.construct_block(pre_header_hash, data_hash, timestamp, \

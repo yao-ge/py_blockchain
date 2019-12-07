@@ -24,8 +24,7 @@ class Node:
         #filter_rule = "udp dst port " + str(self.port) + " and src port " \
         #        + str(sport)
         filter_rule = "udp dst port " + str(self.port)
-        print(filter_rule)
-        print("count:", count)
+        #print(filter_rule)
         return self.p.recv_pkt(filter_rule, count)
 
     def get_request_type(self, sport = 0):
@@ -41,8 +40,7 @@ class Node:
         elif pkt[0]['Raw'].load.startswith(b'exit'):
             request_type = 'exit'
 
-        print(pkt)
-        print(pkt.summary())
+        #print(pkt)
         return request_type, pkt[0]['IP']
 
     def change_request_type(self, pkt, old_type, new_type):
@@ -57,8 +55,7 @@ class Node:
         self.p.send_pkt()
 
         re_pkt = self.listen_from_port(storage_port)
-        type(re_pkt)
-        print(re_pkt)
+        #print(re_pkt)
 
         self.p.pkt = re_pkt[0]["IP"]
         self.p.pkt.sport = self.port
@@ -74,16 +71,16 @@ class Node:
         self.p.send_pkt()
 
         re_pkt = self.listen_from_port(dport)
-        print("re pkt:")
-        print(re_pkt[0])
+        #print("re pkt:")
+        #print(re_pkt[0])
 
         pre_header_hash, data_hash, timestamp, nonce = \
                 self.pb.unpack_block(re_pkt[0]['IP'].load[:144])
 
-        print(pre_header_hash)
-        print(data_hash)
-        print(timestamp)
-        print(nonce)
+        #print(pre_header_hash)
+        #print(data_hash)
+        #print(timestamp)
+        #print(nonce)
         hash_str = "".join([pre_header_hash.decode(), data_hash.decode(),\
                 str(timestamp), str(nonce)])
 
@@ -118,13 +115,13 @@ class Node:
 
     def verify_pkt_is_valid(self, pkt):
         block = pkt[0].load
-        print("recv block:", block)
+        #print("recv block:", block)
         pre_header_hash, data_hash, timestamp, nonce = self.pb.unpack_block(block[:144])
         hash_str = "".join([pre_header_hash.decode(), data_hash.decode(),\
                 str(timestamp), str(nonce)])
         self.new_header_hash = self.pb.gen_hash(hash_str)
         self.headers_hash_list.append(self.new_header_hash)
-        print("verify hash str:", hash_str, type(hash_str))
+        #print("verify hash str:", hash_str)
         print("verify new header hash:", self.new_header_hash)
         return self.pb.proof_work(hash_str), self.new_header_hash
 
@@ -145,13 +142,13 @@ class Node:
             copy_port = 0
             for pkt in pkts:
                 copy_port = copy_port if int(pkt.load.decode()) < copy_port else pkt.sport
-                print("copy port:", copy_port)
+                #print("copy port:", copy_port)
                 #max_block_content = max_block_content if len(pkt.load) < len(max_block_content) else pkt.load
                 #print(int(pkt.load.decode()))
                 #print("sport:", pkt.sport)
                 #print("max block content: ", max_block_content)
 
-            print("port:", self.port)
+            #print("port:", self.port)
             #print("max block content:", max_block_content)
             #self.p.construct_pkt(self.port, 3231, max_block_content)
             #self.p.wr_pkt(port = self.port)
